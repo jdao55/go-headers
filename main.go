@@ -15,6 +15,14 @@ func checkRedirect(req *http.Request, via []*http.Request) error {
 	return http.ErrUseLastResponse
 }
 
+//splits longs stirng with new lines
+func splitString(str string, n int) string {
+	for i:=1; i< len(str)/n+1; i++{
+		str=str[:n*i+i-1]+"\n\t"+str[n*i+i:];
+	}
+	return str
+	
+}
 
 //prints header info
 func PrintHeader(resp *http.Header) {
@@ -27,26 +35,13 @@ func PrintHeader(resp *http.Header) {
 	for header_key := range *resp{
 		header_list = append(header_list, header_key)
 	}
-
 	sort.Strings(header_list)
-
+	
 	
 	for _, header_key := range header_list[:] {
 		for _, headerValue := range (*resp)[header_key] {
-			//format long strings
-			if len(headerValue)>60 {
-				fmt.Fprintf(tab_writer, "%s\t%s\n", header_key, headerValue[:60])
-				headerValue = headerValue[60:]
-				for len(headerValue) > 60 {
-					fmt.Fprintf(tab_writer, "\t%s\n", headerValue[:60])
-					headerValue = headerValue[60:]
-				}
-				fmt.Fprintf(tab_writer, "\t%s\n",  headerValue)
-			} else {
-					fmt.Fprintf(tab_writer, "%s\t%s\n", header_key, headerValue)
-			}
-			
-}
+			fmt.Fprintf(tab_writer, "%s\t%s\n", header_key, splitString(headerValue,60))
+		}
 	}
 
 	tab_writer.Flush()
