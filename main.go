@@ -16,11 +16,13 @@ func checkRedirect(req *http.Request, via []*http.Request) error {
 }
 
 
+//prints header info
 func PrintHeader(resp *http.Header) {
 	var (
 		buffer bytes.Buffer
 		tab_writer = tabwriter.NewWriter(&buffer, 0, 0, 2, ' ', 0)
 	)
+	//sort headers
 	header_list := make([]string, 0, len(*resp))
 	for header_key := range *resp{
 		header_list = append(header_list, header_key)
@@ -31,7 +33,7 @@ func PrintHeader(resp *http.Header) {
 	
 	for _, header_key := range header_list[:] {
 		for _, headerValue := range (*resp)[header_key] {
-
+			//format long strings
 			if len(headerValue)>60 {
 				fmt.Fprintf(tab_writer, "%s\t%s\n", header_key, headerValue[:60])
 				headerValue = headerValue[60:]
