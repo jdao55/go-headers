@@ -8,12 +8,25 @@ import (
 	"bytes"
 	"text/tabwriter"
 	"sort"
-	//"strings"
+	"strings"
 )
 
 func checkRedirect(req *http.Request, via []*http.Request) error {
 	return http.ErrUseLastResponse
 }
+
+func formatLine(str string, max_len int) string{
+	str_arr := strings.Split(str, ";")
+	var rstr string = ""
+	for _, tstr :=range(str_arr) {
+		tstr = strings.Trim(tstr," \t")
+		if len(tstr)> max_len  {
+			tstr = splitString(tstr, max_len)
+		}
+		rstr+=(tstr+"\n\t")
+	}
+	return rstr[:len(rstr)-2]
+	}
 
 //splits longs stirng with new lines
 func splitString(str string, n int) string {
@@ -40,7 +53,7 @@ func PrintHeader(resp *http.Header) {
 	
 	for _, header_key := range header_list[:] {
 		for _, headerValue := range (*resp)[header_key] {
-			fmt.Fprintf(tab_writer, "%s\t%s\n", header_key, splitString(headerValue,60))
+			fmt.Fprintf(tab_writer, "%s\t%s\n", header_key, formatLine(headerValue,80))
 		}
 	}
 
