@@ -70,9 +70,6 @@ func PrintHeader(resp *http.Header) {
 func main() {
 
 	gzip_ptr:=flag.Bool("gzip", false, "turn on gzip")
-	cookie := flag.String("cookie",
-		os.Getenv("GET_HEADERS_COOKIE"),
-		"Set cookie header (overrides GET_HEADERS_COOKIE environmental variable)")
 	flag.Parse();
 
 	var client = http.Client{
