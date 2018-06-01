@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"text/tabwriter"
 	"sort"
+	"flag"
 	"strings"
 )
 
@@ -30,11 +31,16 @@ func formatLine(str string, max_len int) string{
 
 //splits longs stirng with new lines
 func splitString(str string, n int) string {
-	for i:=1; i< len(str)/n+1; i++{
-		str=str[:n*i+i-1]+"\n\t"+str[n*i+i:];
+	str2:=""
+	for i:=0; i< len(str)/n; i++{
+		str2+=str[n*i:n*(i+1)]
+		if i < (len(str)/n -1) {
+			str2+="\n>>>\t"
+		}
+
 	}
-	return str
-	
+	return str2
+
 }
 
 //prints header info
@@ -49,11 +55,9 @@ func PrintHeader(resp *http.Header) {
 		header_list = append(header_list, header_key)
 	}
 	sort.Strings(header_list)
-	
-	
 	for _, header_key := range header_list[:] {
 		for _, headerValue := range (*resp)[header_key] {
-			fmt.Fprintf(tab_writer, "%s\t%s\n", header_key, formatLine(headerValue,80))
+			fmt.Fprintf(tab_writer, "%s\t%s\n", header_key, formatLine(headerValue,60))
 		}
 	}
 
@@ -65,17 +69,29 @@ func PrintHeader(resp *http.Header) {
 
 func main() {
 
+	gzip_ptr:=flag.Bool("gzip", false, "turn on gzip")
+	cookie := flag.String("cookie",
+		os.Getenv("GET_HEADERS_COOKIE"),
+		"Set cookie header (overrides GET_HEADERS_COOKIE environmental variable)")
+	flag.Parse();
+
 	var client = http.Client{
 		CheckRedirect: checkRedirect,
 		Transport: &http.Transport{
 			DisableCompression: true,
 		},
 	}
-	
-	url := os.Args[1]
+
+
+
+	url := flag.Args()[0]
 	req, err := http.NewRequest("GET", url, nil)
 	if err!=nil {
 		os.Exit(1)
+	}
+
+	if (*gzip_ptr) {
+		req.Header.Add("Accept-Encoding", "gzip, deflate")
 	}
 
 	start_time := time.Now()
@@ -90,5 +106,5 @@ func main() {
 	fmt.Println("Took: ", req_duration)
 	fmt.Println(resp.Proto, resp.Status)
 	PrintHeader(&(resp.Header))
-	os.Exit(0)	
+	os.Exit(0)
 }
